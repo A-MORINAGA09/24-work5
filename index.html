@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ピアノアプリ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+    }
+
+
+    .box {
+      background-color: rgb(134, 166, 255);
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      background: url(./saisyuujs/hosizora.jpg) center/cover blue;
+      /*border-color: black;*/
+      /*border: 1rem solid;*/
+    }
+
+    /*.content {
+      width: 560px;
+      height: 80px;
+      border: 2px solid #000;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 80px;
+      margin-bottom: 50px;
+    }
+    */
+
+    .btn {
+      margin: 50px;
+      width: 240px;
+      height: 30px;
+
+    }
+    .hyouji {
+      padding: 50px;
+    }
+
+
+    .piano {
+      display: flex;
+    }
+
+    .white {
+      width: 80px;
+      height: 320px;
+      background-color: white;
+      border: 1px solid gray;
+      line-height: 600px;
+      text-align: center;
+    }
+
+    .black {
+      width: 48px;
+      height: 192px;
+      background-color: black;
+      margin-left: -24px;
+      margin-right: -24px;
+      z-index: 2;
+    }
+
+    .osenai {
+      pointer-events: none;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="box">
+    <div class="content" id="tekisuto">※ピアノの鍵盤のCSSのみコピペしています。</div>
+    <!-- <div class="hyouji" id="hyouji">ピアノアプリ</div> -->
+
+    <button id="btn">自動演奏</button><br>
+    <div class="piano">
+      <!-- ドレミファソラシド -->
+      <div class="key white" id="donatu">ド</div>
+      <div class="black"></div>
+      <div class="key white" id="remon">レ</div>
+      <div class="black"></div>
+      <div class="key white" id="minna">ミ</div>
+      <div class="key white" id="faito">ファ</div>
+      <div class="black"></div>
+      <div class="key white" id="aoisora">ソ</div>
+      <div class="black"></div>
+      <div class="key white" id="rappa">ラ</div>
+      <div class="black"></div>
+      <div class="key white" id="siawase">シ</div>
+
+    </div>
+
+  </div>
+  <!-- <button id="btn2">チューリップ仮</div> -->
+    <!-- <button id="btn3">クリアイベント仮</div> -->
+    <!-- <button id="btn4">リムーブイベントリスナー仮</div> -->
+
+
+      <script>
+
+        //let doAbj = new Audio('sounds/do.mp3');
+
+        let doo = new Audio('sounds/do.mp3');
+        let reo = new Audio('sounds/re.mp3');
+        let mio = new Audio('sounds/mi.mp3');
+        let fao = new Audio('sounds/fa.mp3');
+        let soo = new Audio('sounds/so.mp3');
+        let rao = new Audio('sounds/ra.mp3');
+        let sio = new Audio('sounds/si.mp3');
+        let nao = new Audio('sounds/na.mp3');
+
+
+        const kira_musiclist = ['sounds/do.mp3', 'sounds/re.mp3', 'sounds/mi.mp3']
+        // const kirao = new audio(kira_musiclist[currentMusicIndex]);
+
+
+        const otoobj = [doo, reo, mio, fao, soo, rao, sio, nao];
+        const hyouji = document.querySelector('#hyouji');
+        const piano = document.querySelector('.piano');
+        const btn2 = document.querySelector('#btn2');
+        const btn3 = document.querySelector('#btn3');
+        const btn4 = document.querySelector('#btn4');
+        const box = document.querySelector('.box')
+
+        ////スクロール
+        box.style.backgroundRepeat = 'repeat-x';
+        function scrollBG() {
+          box.style.height = '100vh';
+          box.style.backgroundImage = 'url(./saisyuujs/hosizora.jpg)';
+          box.style.backgroundRepeat = 'repeat-x';
+        
+          count = 0;
+          timerID = setInterval('scrollBG_countup()', 200);
+        }
+        
+        function scrollBG_countup() {
+          count++;
+          if (count > 99) count = 0;
+          box.style.backgroundPosition = (count * 16) + 'px 0px';
+        }
+        scrollBG();
+        
+        ////スクロール終わり
+
+
+
+        //白鍵盤の取得
+        donatu = document.querySelector('#donatu');
+        const remon = document.querySelector('#remon');
+        const minna = document.querySelector('#minna');
+        const faito = document.querySelector('#faito');
+        const aoisora = document.querySelector('#aoisora');
+        const rappa = document.querySelector('#rappa');
+        const siawase = document.querySelector('#siawase');
+
+        //枠部分の取得
+        const tekisuto = document.querySelector('#tekisuto')
+
+        //ボタン 自動演奏部分の取得
+        const btn = document.querySelector('#btn');
+        //きらきらぼし
+        let kinum = [0, 0, 5, 5]
+
+
+
+        //枠に音階名を表示させる
+        //tekisuto.textContent = remon.textContent;
+
+        //配列に鍵盤を入れる 定数を入れてもDOMを書いてもだめだった。
+        const hiragana = [
+          'ど', 'れ', 'み', 'ふぁ', 'そ', 'ら', 'し',
+        ]
+        const kennbannlist = [
+          document.querySelector('#donatu'),
+          document.querySelector('#remon'),
+          document.querySelector('#minna'),
+          document.querySelector('#faito'),
+          document.querySelector('#aoisora'),
+          document.querySelector('#rappa'),
+          document.querySelector('#siawase'),
+
+        ];
+
+        //手動演奏
+
+        const onkai = (kenban, tabemono, oto) => {
+          kenban.addEventListener("click", () => {
+            //      if(flag = 7) {
+            //      tekisuto.textContent = tabemono
+            //      oto.play();
+            //      setTimeout(() => {
+            //        clearTimeout(kieru);
+            //        tekisuto.textContent = ' ';
+            //     }, 4000);
+            //
+            ////     } else {
+            tekisuto.textContent = tabemono
+            oto.play();
+            setTimeout(() => {
+              tekisuto.textContent = ' ';
+            }, 4000);
+          });
+
+        }
+        //音階表示　実際に実行している部分
+        for (let i = 0; i < 7; i++) {
+          onkai(kennbannlist[i], hiragana[i], otoobj[i]);
+        }
+        //console.log(`${kieru}ああ`);
+
+        //お試し自動演奏（成功）
+        //btn.addEventListener('click', () => {
+        //
+        //  setTimeout(() => {
+        //    doo.play();
+        //    setTimeout(() => {
+        //      reo.play();
+        //      setTimeout(() => {
+        //        mio.play();
+        //  }, 1000);
+        //  }, 1000);
+        //  }, 1000);
+        //
+        //});
+
+
+        //let  kiraobj = [
+        //doo, doo, soo, soo, rao,
+        //rao, soo, fao, fao, mio,
+        //mio, reo, reo, doo, soo,
+        //soo, fao, fao, mio, mio,
+        //reo, soo, soo, fao, fao,
+        //mio, mio, reo, doo, doo,
+        //soo, soo, rao, rao, soo,
+        //fao, fao, mio, mio, reo,
+        //reo, doo,
+        //]
+
+
+        let kiraobj = [
+          doo, nao, doo, nao, soo,
+          nao, soo, nao, rao, nao,
+          rao, nao, soo, fao, nao,
+          
+
+         fao, nao, mio, nao, mio,
+         nao, reo, nao, reo, nao,//5*5
+         doo, soo, nao, soo, nao,
+         fao, nao, fao, nao, mio,
+         nao, mio, nao, reo, soo,
+         nao, soo, nao, fao, nao,
+         fao, nao, mio, nao, mio,//10*5
+         nao, reo, doo, nao, doo,
+         nao, soo, nao, soo, nao,
+         rao, nao, rao, nao, soo,
+         fao, nao, fao, nao, mio,
+         nao, mio, nao, reo, nao,//15*5
+         reo, nao, doo,
+       ];
+//
+        let kiratext = [
+          'ド', '', 'ド', '', 'ソ',
+          '', 'ソ', '', 'ラ', '',
+          'ラ', '', 'ソ', 'ファ', '',
+          'ファ', '', 'ミ', '', 'ミ',
+          '', 'レ', '', 'レ', '',
+          'ド', 'ソ', '', 'ソ', '',
+          'ファ', '', 'ファ', '', 'ミ',
+          '', 'ミ', '', 'レ', 'ソ',
+          '', 'ソ', '', 'ファ', '',
+          'ファ', '', 'ミ', '', 'ミ',
+          '', 'レ', 'ド', '', 'ド',
+          '', 'ソ', '', 'ソ', '',
+          'ラ', '', 'ラ', '', 'ソ',
+          'ファ', '', 'ファ', '', 'ミ',
+          '', 'ミ', '', 'レ', '',
+          'レ', '', 'ド',
+        ];
+
+
+
+        let kionnpu = [
+          500, 500, 500, 500, 500,
+          500, 500, 500, 500, 500,
+          500, 500, 2000, 500, 500,
+        
+          500, 500, 500, 500, 500,
+          500, 500, 500, 500, 500,//5
+          2000, 500, 500, 500, 500,
+          500, 500, 500, 500, 500,
+          500, 500, 500, 2000, 500,
+          500, 500, 500, 500, 500,
+          500, 500, 500, 500, 500,//10
+          500, 2000, 500, 500, 500,
+          500, 500, 500, 500, 500,
+          500, 500, 500, 500, 2000,
+          500, 500, 500, 500, 500,
+          500, 500, 500, 500, 500,//15
+          500, 500, 2000,
+          500, 4000,
+        ]
+
+
+        let chobj = [
+          doo, reo, mio, doo, reo,
+          mio, soo, mio, reo, doo,
+          reo, mio, reo, doo, reo,
+          mio, doo, reo, mio, soo,
+          mio, reo, doo, reo, mio,
+          doo, soo, soo, mio, soo,
+          rao, rao, soo, mio, mio,
+          reo, reo, doo,
+        ]
+
+        let chonnpu = [
+
+          500, 500, 1000, 500, 500,
+          1000, 500, 500, 500, 500,
+          500, 500, 1000, 500, 500,
+          1000, 500, 500, 1000, 500,
+          500, 500, 500, 500, 500,
+          1000, 500, 500, 500, 500,
+          500, 500, 1000, 500, 500,
+          500, 500, 4000,
+        ]
+
+        let chtext = [
+          'ド', 'レ', 'ミ', 'ド', 'レ',
+          'ミ', 'ソ', 'ミ', 'レ', 'ド',
+          'レ', 'ミ', 'レ', 'ド', 'レ',
+          'ミ', 'ド', 'レ', 'ミ', 'ソ',
+          'ミ', 'レ', 'ド', 'レ', 'ミ',
+          'ド', 'ソ', 'ソ', 'ミ', 'ソ',
+          'ラ', 'ラ', 'ソ', 'ミ', 'ミ',
+          'レ', 'レ', 'ド',
+        ]
+
+
+
+
+        //イベントリスナーendedは音楽の再生が終わったらなので元の音楽の再生が終わったらでないと使えない可能性がある。
+        //pauseにもイベントリスナーがある。
+        //playingというイベントもある。再生が最初に開始されたとき
+        //audio要素のプロパティとしてよく用いられるものには、src, currentTime, duration, paused, muted, volume などがあります。
+        //HTMLMediaElement.duration
+
+
+
+//1023
+let i = 0;
+let j = 0;
+let flag = false;
+console.log(flag);
+let clearID;
+const clearIDes = [];
+
+//ループ関数
+function loop() {
+
+
+    if (i === kiraobj.length) {
+    clearTimeout(clearID);
+    flag = false;
+    return;
+  }
+  flag = true;
+  console.log(flag);
+    kiraobj[i].pause();
+    kiraobj[i].currentTime = 0;
+    kiraobj[i].play();
+    console.log(i);
+
+    //ここにアドイベントリスナーをつける？
+    clearID = setTimeout(loop, kionnpu[j]);
+
+    clearIDes.push(clearID);
+    //console.log(clearIDes);
+  j++;
+  i++;
+
+  if(flag === true) {
+    btn.removeEventListener('click', loop);
+    btn3.addEventListener('click', clearIB);
+  }
+
+  //if(flag === false) {
+  //  btn.addEventListener('click', loop);
+  //}
+
+  if(flag === false) {
+    btn.addEventListener('click', function(flag){
+      loop(true);
+    }
+    )
+  }
+
+
+
+  //console.log(clearID);
+}//loop関数の終
+
+
+//自動演奏中かどうかの判定
+//function T() {
+//  if(flag === false) {
+//    flag = true;
+//    console.log(flag);
+//  }
+//}
+
+    //フラグがフォルスになって欲しい時
+    //・音楽が最後までなった時
+    //・途中でボタンをおした時→フラグがTからFになった時
+
+//}
+//無音→演奏TRUE
+ //function T() {
+ // if(flag === false) {
+ //   flag = true;
+ // }
+ // }
+
+  //演奏→無音 FALSE
+//function doubleclick() {
+//  if (flag === true) {
+//    flag = false;//flagが外にあるので効いてなくて、使うには引数が必要
+//    //clearIB();
+//    console.log(flag);
+//    i = 0;//音オブジェクトを頭出しして曲が最初になるようにする。
+//    j = 0;
+//  }
+//}//ダブルクリック関数の閉じカッコ
+
+//クリックイベ 押したらループ関数が始まる
+
+if (flag === false) {
+  btn.addEventListener('click', loop)
+}
+
+////クリックイベ
+//btn.addEventListener('click', T);
+
+//ダブルクリック(F)したときに行ってほしい処理
+//btn.addEventListener('click', doubleclick);
+//／イベントリスナで引数をつかうやり方を調べる。
+
+//ボタン３を押した時クリアにする
+//if (flag === true) {
+//  btn.addEventListener('click', clearIB);
+//}
+
+//if (flag === true) {
+//  btn3.addEventListener('click', clearIB);
+//}
+
+//}
+//
+//if (flag === true) {
+//  btn.addEventListener('click', clearIB);
+//}
+////btn3.addEventListener('click', clearIB);
+//
+////ボタン４を作ってリムーブイベントリスナを発生させる
+//btn4.removeEventListener('click', clearIB);
+
+
+function clearIB() {
+  for (let num = 0; num < kiraobj.length; num++) {
+    clearTimeout(clearIDes[num]);
+    i = 0;
+    j = 0;
+    flag = false;
+    console.log(flag);
+  }
+}
+
+if (flag === true) {
+  btn3.addEventListener('click', clearIB);
+}
+
+
+
+//btn3.addEventListener('click', function(clearIDes, clearID) {
+//  clearIB(clearID[clearID]);
+//}
+
+
+
+//もしTFがTならば外す
+//if (flag === true) {
+//  btn.removeEventListener('click', loop);
+//}
+
+
+//（クリックイベントが無いとエラーになってしまうので）
+//仮のボタン３にIDを取得するイベント追加する
+//btn.addEventListener('click', clearIB);
+
+
+//        //チューリップボタン２仮 //後で使う
+//        btn2.addEventListener('click', () => {
+//
+//          // if (kiraobj[i] === kiraobj[i].length) {
+//
+//           //clearTimeout(lo);
+//           btn.textContent = '自動演奏';
+//           hyouji.textContent = '';
+//        
+//        
+//         //} else {
+//           let eflag = true;
+//           btn.textContent = '演奏中止';
+//           hyouji.textContent ='自動演奏中です：チューリップ'
+//           piano.classList.add('osenai');
+//           console.log(eflag);
+//        
+//         setTimeout(() => {
+//         chobj[i].currentTime = 0;
+//         chobj[i].play();
+//         tekisuto.textContent = chtext[i];
+//         function Clo(j) {
+//           setTimeout(() => {
+//           chobj[i].pause();
+//           i++;
+//           chobj[i].currentTime = 0;
+//           chobj[i].play();
+//           j++;
+//           console.log(j);
+//           tekisuto.textContent = chtext[i];
+//           Clo(j);
+//         }, chonnpu[j])};
+//         Clo(j);
+//         }, chonnpu[j]);
+//        
+//         //}//if文の閉じカッコ
+//        
+//         });
+//        
+//        
+//        //チューリップボタン２仮終わり
+
+
+
+</script>
+</body>
+
+</html>
+
